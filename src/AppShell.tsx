@@ -23,6 +23,7 @@ const allLinks: LinkDef[] = [
   { to: '/quality', label: 'Qualité', badge: 'quality', perm: 'content.moderate' },
   { to: '/users', label: 'Utilisateurs', perm: 'content.read_any' },
   { to: '/reference', label: 'Référentiel', perm: 'reference.manage' },
+  { to: '/dataset', label: 'Dataset', perm: 'export.run' },
   { to: '/money', label: 'Argent', badge: 'withdrawals', perm: 'withdrawal.settle' },
   { to: '/audit', label: 'Audit', perm: 'audit.read' },
 ];

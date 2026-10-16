@@ -118,6 +118,16 @@ export interface RefPrompt {
   text: string;
   writingSystem: string;
 }
+export interface DatasetRelease {
+  id: string;
+  version: string;
+  status: string;
+  filterSpec: Record<string, unknown>;
+  licenseTag: string;
+  stats?: Record<string, unknown>;
+  createdAt: string;
+  publishedAt?: string;
+}
 export interface AuditEntry {
   id: string;
   actorId: string;
@@ -186,6 +196,23 @@ export const adminApi = {
     req<{ ok: boolean }>(`/admin/prompts/${encodeURIComponent(stableId)}`, {
       method: 'PATCH', body: JSON.stringify({ active }),
     }),
+  listDatasetReleases: () => req<{ releases: DatasetRelease[] }>('/admin/dataset/releases'),
+  createDatasetRelease: (input: {
+    version: string;
+    licenseTag?: string;
+    filter?: { languages?: string[]; aOnly?: boolean; commercialOnly?: boolean };
+  }) =>
+    req<{ release: DatasetRelease; itemCount: number; preview: string[] }>('/admin/dataset/releases', {
+      method: 'POST', body: JSON.stringify(input),
+    }),
+  downloadManifest: async (id: string): Promise<string> => {
+    const res = await fetch(apiUrl(`/admin/dataset/releases/${id}/manifest`), {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+    handleUnauthorized(res);
+    if (!res.ok) throw new Error(`Manifeste indisponible (${res.status})`);
+    return res.text();
+  },
   updateUser: (id: string, patch: { role?: string; competence?: number }, reason: string) =>
     req<{ id: string; role: string; competence: number }>(`/admin/users/${id}`, {
       method: 'PATCH',
