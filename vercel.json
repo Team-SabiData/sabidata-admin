@@ -5,11 +5,11 @@
   "rewrites": [
     {
       "source": "/admin/:path*",
-      "destination": "https://REPLACE_WITH_RAILWAY_HOST/admin/:path*"
+      "destination": "https://sabidata-api-production.up.railway.app/admin/:path*"
     },
     {
       "source": "/api/:path*",
-      "destination": "https://REPLACE_WITH_RAILWAY_HOST/api/:path*"
+      "destination": "https://sabidata-api-production.up.railway.app/api/:path*"
     },
     {
       "source": "/((?!assets/).*)",
