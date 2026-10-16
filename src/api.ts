@@ -64,6 +64,59 @@ export interface Dispute {
   id: string;
   durationS: number;
   rarity: number;
+  language?: string;
+  dialect?: string;
+  region?: string;
+  audioQuality?: string;
+  promptId?: string;
+  promptText?: string;
+  contributor?: { id: string; name: string };
+  votes?: Array<{ verdict: string; validatorId: string; competence: number }>;
+}
+export interface QualityItem {
+  id: string;
+  status: string;
+  durationS: number;
+  audioQuality: string | null;
+  silenceRatio: number | null;
+  snrDb: number | null;
+  language?: string;
+  dialect?: string;
+  promptText?: string;
+  contributorId: string;
+  createdAt: string;
+  autocheck?: Record<string, unknown> | null;
+}
+export interface AdminMe {
+  id: string;
+  name: string;
+  role: string;
+  competence: number;
+  permissions: string[];
+}
+export interface RefLanguage {
+  id: string;
+  code: string;
+  nameFr: string;
+  isoBcp47: string;
+  status: string;
+}
+export interface RefDialect {
+  id: string;
+  languageId: string;
+  languageCode: string;
+  code: string;
+  nameFr: string;
+  zone?: string;
+  targetHours: number;
+}
+export interface RefPrompt {
+  id: string;
+  stableId: string;
+  languageCode: string;
+  dialectCode?: string;
+  text: string;
+  writingSystem: string;
 }
 export interface AuditEntry {
   id: string;
@@ -98,6 +151,10 @@ export interface Withdrawal {
   createdAt: string;
 }
 
+export function canPerm(perms: string[] | undefined, perm: string): boolean {
+  return Boolean(perms?.includes(perm));
+}
+
 export const adminApi = {
   login: (email: string, password: string) =>
     req<{ challenge: string }>('/admin/auth/login', {
@@ -109,8 +166,26 @@ export const adminApi = {
       method: 'POST',
       body: JSON.stringify({ challenge, code }),
     }),
+  me: () => req<AdminMe>('/admin/me'),
   users: () => req<{ users: AdminUser[] }>('/admin/users'),
   disputes: () => req<{ disputes: Dispute[] }>('/admin/disputes'),
+  qualityQueue: () => req<{ items: QualityItem[] }>('/admin/quality-queue'),
+  languages: () => req<{ languages: RefLanguage[] }>('/admin/languages'),
+  createLanguage: (input: { code: string; nameFr: string; isoBcp47: string }) =>
+    req<{ language: RefLanguage }>('/admin/languages', { method: 'POST', body: JSON.stringify(input) }),
+  dialects: (lang?: string) =>
+    req<{ dialects: RefDialect[] }>(`/admin/dialects${lang ? `?lang=${encodeURIComponent(lang)}` : ''}`),
+  createDialect: (input: {
+    languageCode: string; code: string; nameFr: string; zone?: string; targetHours?: number;
+  }) => req<{ dialect: RefDialect }>('/admin/dialects', { method: 'POST', body: JSON.stringify(input) }),
+  prompts: (lang?: string) =>
+    req<{ prompts: RefPrompt[] }>(`/admin/prompts${lang ? `?lang=${encodeURIComponent(lang)}` : ''}`),
+  createPrompt: (input: { stableId: string; languageCode: string; dialectCode?: string; text: string }) =>
+    req<{ prompt: RefPrompt }>('/admin/prompts', { method: 'POST', body: JSON.stringify(input) }),
+  setPromptActive: (stableId: string, active: boolean) =>
+    req<{ ok: boolean }>(`/admin/prompts/${encodeURIComponent(stableId)}`, {
+      method: 'PATCH', body: JSON.stringify({ active }),
+    }),
   updateUser: (id: string, patch: { role?: string; competence?: number }, reason: string) =>
     req<{ id: string; role: string; competence: number }>(`/admin/users/${id}`, {
       method: 'PATCH',

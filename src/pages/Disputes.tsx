@@ -25,7 +25,6 @@ export function Disputes() {
 
   useEffect(() => { load(); }, [load]);
 
-  // Révoque l'object URL précédent dès qu'on en obtient un nouveau, et au démontage.
   useEffect(() => () => {
     if (audioUrl) URL.revokeObjectURL(audioUrl);
   }, [audioUrl]);
@@ -51,8 +50,36 @@ export function Disputes() {
     push('Arbitrage enregistré');
   };
 
+  const voteSummary = (d: Dispute) => {
+    const votes = d.votes ?? [];
+    const correct = votes.filter((v) => v.verdict === 'correct').length;
+    const problem = votes.filter((v) => v.verdict === 'problem').length;
+    const unsure = votes.filter((v) => v.verdict === 'unsure').length;
+    return `${correct}✓ ${problem}✗ ${unsure}? (${votes.length})`;
+  };
+
   const columns: Column<Dispute>[] = [
     { key: 'id', label: 'Litige', render: (d) => <code>{d.id.slice(0, 8)}</code> },
+    {
+      key: 'contributor',
+      label: 'Contributeur',
+      render: (d) => d.contributor?.name ?? '—',
+    },
+    {
+      key: 'lang',
+      label: 'Langue',
+      render: (d) => `${d.language ?? '—'} / ${d.dialect ?? '—'}`,
+    },
+    {
+      key: 'prompt',
+      label: 'Prompt',
+      render: (d) => (
+        <span title={d.promptText} style={{ maxWidth: 200, display: 'inline-block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {d.promptText ?? '—'}
+        </span>
+      ),
+    },
+    { key: 'votes', label: 'Votes', render: (d) => <span className="mono" style={{ fontSize: 12 }}>{voteSummary(d)}</span> },
     { key: 'durationS', label: 'Durée', render: (d) => `${d.durationS}s` },
     { key: 'rarity', label: 'Rareté', render: (d) => <Badge tone="blue">{d.rarity}</Badge> },
     {
@@ -99,10 +126,8 @@ export function Disputes() {
             ? 'Le clip sera validé malgré le litige.'
             : 'Le clip sera rejeté et retiré du corpus.'
         }
-        confirmLabel={arbitrating?.verdict === 'validated' ? 'Valider' : 'Rejeter'}
-        danger={arbitrating?.verdict === 'rejected'}
-        onConfirm={confirmArbitrate}
         onClose={() => setArbitrating(null)}
+        onConfirm={confirmArbitrate}
       />
     </div>
   );
