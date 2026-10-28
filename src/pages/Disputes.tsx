@@ -126,6 +126,8 @@ export function Disputes() {
             ? 'Le clip sera validé malgré le litige.'
             : 'Le clip sera rejeté et retiré du corpus.'
         }
+        confirmLabel={arbitrating?.verdict === 'validated' ? 'Valider' : 'Rejeter'}
+        danger={arbitrating?.verdict === 'rejected'}
         onClose={() => setArbitrating(null)}
         onConfirm={confirmArbitrate}
       />
