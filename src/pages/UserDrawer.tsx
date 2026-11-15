@@ -86,7 +86,9 @@ export function UserDrawer({ user, onClose, onChanged }: {
   const loadDetails = useCallback(() => {
     void adminApi.userWallet(user.id).then(setWallet).catch((e) => setError((e as Error).message));
     void adminApi.userLedger(user.id).then((d) => setLedger(d.entries)).catch((e) => setError((e as Error).message));
-    void adminApi.userActivity(user.id).then((d) => setActivity(d.entries)).catch((e) => setError((e as Error).message));
+    void adminApi.userActivity(user.id)
+      .then((d) => setActivity([...d.entries].sort((x, y) => new Date(y.createdAt).getTime() - new Date(x.createdAt).getTime())))
+      .catch((e) => setError((e as Error).message));
   }, [user.id]);
 
   useEffect(() => { loadDetails(); }, [loadDetails]);

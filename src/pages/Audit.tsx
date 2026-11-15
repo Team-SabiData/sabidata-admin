@@ -53,18 +53,20 @@ export function Audit() {
 
   const resolveName = (id: string) => users.find((u) => u.id === id)?.name ?? id.slice(0, 8);
 
-  const filtered = entries.filter((e) => {
-    if (actionFilter !== 'toutes' && e.action !== actionFilter) return false;
-    if (actorFilter !== 'tous' && e.actorId !== actorFilter) return false;
-    const created = new Date(e.createdAt);
-    if (dateStart && created < new Date(dateStart)) return false;
-    if (dateEnd) {
-      const end = new Date(dateEnd);
-      end.setHours(23, 59, 59, 999);
-      if (created > end) return false;
-    }
-    return true;
-  });
+  const filtered = entries
+    .filter((e) => {
+      if (actionFilter !== 'toutes' && e.action !== actionFilter) return false;
+      if (actorFilter !== 'tous' && e.actorId !== actorFilter) return false;
+      const created = new Date(e.createdAt);
+      if (dateStart && created < new Date(dateStart)) return false;
+      if (dateEnd) {
+        const end = new Date(dateEnd);
+        end.setHours(23, 59, 59, 999);
+        if (created > end) return false;
+      }
+      return true;
+    })
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
   const exportCsv = () => {
     const head = 'date;acteur;action;entite;motif';

@@ -28,7 +28,11 @@ export function Money() {
 
   const load = useCallback(() => {
     void Promise.all([adminApi.users(), adminApi.withdrawals(), adminApi.auditLog({ action: 'wallet.adjust' })])
-      .then(([u, w, a]) => { setUsers(u.users); setWithdrawals(w.withdrawals); setAdjustments(a.entries); })
+      .then(([u, w, a]) => {
+        setUsers(u.users);
+        setWithdrawals(w.withdrawals);
+        setAdjustments([...a.entries].sort((x, y) => new Date(y.createdAt).getTime() - new Date(x.createdAt).getTime()));
+      })
       .catch((e) => setError((e as Error).message));
   }, []);
 
