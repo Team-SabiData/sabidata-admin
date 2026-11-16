@@ -12,6 +12,7 @@ import { Audit } from './pages/Audit';
 import { Reference } from './pages/Reference';
 import { QualityQueue } from './pages/QualityQueue';
 import { Dataset } from './pages/Dataset';
+import { Support } from './pages/Support';
 
 function Guard({ children }: { children: React.ReactNode }) {
   const nav = useNavigate();
@@ -29,6 +30,7 @@ export default function App() {
           <Route element={<Guard><AppShell /></Guard>}>
             <Route path="/" element={<Overview />} />
             <Route path="/disputes" element={<Disputes />} />
+            <Route path="/support" element={<Support />} />
             <Route path="/quality" element={<QualityQueue />} />
             <Route path="/users" element={<Users />} />
             <Route path="/reference" element={<Reference />} />

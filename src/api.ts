@@ -161,6 +161,23 @@ export interface Withdrawal {
   createdAt: string;
 }
 
+export interface SupportMessage {
+  id: string;
+  text: string;
+  sender: 'user' | 'assistant' | 'admin' | string;
+  createdAt: string;
+}
+export interface SupportSession {
+  id: string;
+  status: string;
+  reason?: string | null;
+  user?: { id?: string; name?: string | null; phone?: string | null; level?: string | null; balanceFcfa?: number | null };
+  messages?: SupportMessage[];
+  lastMessage?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export function canPerm(perms: string[] | undefined, perm: string): boolean {
   return Boolean(perms?.includes(perm));
 }
@@ -177,6 +194,13 @@ export const adminApi = {
       body: JSON.stringify({ challenge, code }),
     }),
   me: () => req<AdminMe>('/admin/me'),
+  supportSessions: () => req<{ sessions: SupportSession[] }>('/admin/support/sessions'),
+  replySupportSession: (id: string, text: string) =>
+    req<{ message: SupportMessage }>(`/admin/support/sessions/${encodeURIComponent(id)}/reply`, {
+      method: 'POST', body: JSON.stringify({ text }),
+    }),
+  closeSupportSession: (id: string) =>
+    req<{ status: string }>(`/admin/support/sessions/${encodeURIComponent(id)}/close`, { method: 'POST' }),
   users: () => req<{ users: AdminUser[] }>('/admin/users'),
   disputes: () => req<{ disputes: Dispute[] }>('/admin/disputes'),
   qualityQueue: () => req<{ items: QualityItem[] }>('/admin/quality-queue'),
