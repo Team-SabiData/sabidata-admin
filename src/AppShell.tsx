@@ -2,8 +2,8 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { adminApi, canPerm, setToken, type AdminMe } from './api';
 
-const CountsCtx = createContext<{ disputes: number; withdrawals: number; quality: number; reload: () => void }>({
-  disputes: 0, withdrawals: 0, quality: 0, reload: () => {},
+const CountsCtx = createContext<{ disputes: number; withdrawals: number; quality: number; support: number; reload: () => void }>({
+  disputes: 0, withdrawals: 0, quality: 0, support: 0, reload: () => {},
 });
 export const useCounts = () => useContext(CountsCtx);
 
@@ -13,13 +13,14 @@ export const useMe = () => useContext(MeCtx);
 type LinkDef = {
   to: string;
   label: string;
-  badge?: 'disputes' | 'withdrawals' | 'quality';
+  badge?: 'disputes' | 'withdrawals' | 'quality' | 'support';
   perm?: string;
 };
 
 const allLinks: LinkDef[] = [
   { to: '/', label: 'Vue d’ensemble' },
   { to: '/disputes', label: 'Litiges', badge: 'disputes', perm: 'dispute.arbitrate' },
+  { to: '/support', label: 'Support', badge: 'support' },
   { to: '/quality', label: 'Qualité', badge: 'quality', perm: 'content.moderate' },
   { to: '/users', label: 'Utilisateurs', perm: 'content.read_any' },
   { to: '/reference', label: 'Référentiel', perm: 'reference.manage' },
@@ -29,7 +30,7 @@ const allLinks: LinkDef[] = [
 ];
 
 export function AppShell() {
-  const [counts, setCounts] = useState({ disputes: 0, withdrawals: 0, quality: 0 });
+  const [counts, setCounts] = useState({ disputes: 0, withdrawals: 0, quality: 0, support: 0 });
   const [me, setMe] = useState<AdminMe | null>(null);
   const nav = useNavigate();
   const loc = useLocation();
@@ -60,6 +61,9 @@ export function AppShell() {
         setCounts((c) => ({ ...c, quality: q.items.length }));
       }).catch(() => {}));
     }
+    tasks.push(adminApi.supportSessions().then((s) => {
+      setCounts((c) => ({ ...c, support: s.sessions.filter((session) => !['closed', 'resolved', 'completed'].includes(session.status.toLowerCase())).length }));
+    }).catch(() => {}));
     void Promise.all(tasks);
   }, [me]);
 
@@ -68,7 +72,7 @@ export function AppShell() {
   return (
     <MeCtx.Provider value={me}>
       <CountsCtx.Provider value={{ ...counts, reload }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '220px 1fr', minHeight: '100vh' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '220px 1fr', minHeight: '100vh' }}>
           <nav style={{
             background: 'var(--surface)', borderRight: '1px solid var(--border)',
             padding: '20px 12px', display: 'flex', flexDirection: 'column', gap: 4,
